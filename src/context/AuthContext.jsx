@@ -1,43 +1,94 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { storageService } from '../services/storageService';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { supabase } from '../services/supabase';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
 
-  useEffect(() => {
-    const session = storageService.getAdminSession();
-    if (session) {
-      setUser(session.user);
+  const loadProfile = useCallback(async (userId) => {
+    if (!userId) {
+      setProfile(null);
+      setProfileError('');
+      return null;
     }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, email, role')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error || !data) {
+      setProfile(null);
+      setProfileError('Your account profile is unavailable. Ask an administrator to assign a role.');
+      return null;
+    }
+
+    setProfile(data);
+    setProfileError('');
+    return data;
   }, []);
 
-  const login = (username, password) => {
-    const res = storageService.loginAdmin(username, password);
-    if (res.success) {
-      setUser(res.user);
-      setIsAuthModalOpen(false);
-    }
-    return res;
+  useEffect(() => {
+    let isMounted = true;
+
+    const initialize = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!isMounted) return;
+      setSession(data.session);
+      await loadProfile(data.session?.user?.id);
+      if (isMounted) setIsLoading(false);
+    };
+
+    initialize();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setIsLoading(true);
+      loadProfile(nextSession?.user?.id).finally(() => setIsLoading(false));
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [loadProfile]);
+
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { data: null, error };
+    const nextProfile = await loadProfile(data.user?.id);
+    return { data, profile: nextProfile, error: null };
   };
 
-  const logout = () => {
-    storageService.logoutAdmin();
-    setUser(null);
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setSession(null);
+      setProfile(null);
+      setProfileError('');
+    }
   };
+
+  const isStaff = profile?.role === 'admin' || profile?.role === 'editor';
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoggedIn: !!user,
-        login,
-        logout,
-        isAuthModalOpen,
-        openAuthModal: () => setIsAuthModalOpen(true),
-        closeAuthModal: () => setIsAuthModalOpen(false),
+        session,
+        user: session?.user ?? null,
+        profile,
+        isLoading,
+        profileError,
+        isAuthenticated: Boolean(session?.user),
+        isStaff,
+        signIn,
+        signOut,
+        refreshProfile: () => loadProfile(session?.user?.id),
       }}
     >
       {children}

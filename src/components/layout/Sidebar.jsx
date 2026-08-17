@@ -18,7 +18,7 @@ export const Sidebar = ({
   currentView,
   setCurrentView
 }) => {
-  const { isLoggedIn } = useAuth();
+  const { isStaff } = useAuth();
 
   const renderIcon = (iconName) => {
     const IconComp = ICON_MAP[iconName] || Home;
@@ -61,20 +61,17 @@ export const Sidebar = ({
           <hr className="gn-sidebar-divider" />
 
           {/* Admin CMS Direct Shortcut */}
-          {isLoggedIn && (
+          {isStaff && (
             <>
               <div className="gn-nav-section">
                 <div className="gn-section-label">Management</div>
-                <button
+                <a
+                  href="/admin"
                   className={`gn-nav-item ${currentView.startsWith('admin') ? 'active' : ''}`}
-                  onClick={() => {
-                    setCurrentView('admin-dashboard');
-                    if (window.innerWidth <= 768) onClose();
-                  }}
                 >
                   <span className="gn-nav-icon"><LayoutDashboard size={18} /></span>
                   <span className="gn-nav-text">CMS Dashboard</span>
-                </button>
+                </a>
               </div>
               <hr className="gn-sidebar-divider" />
             </>

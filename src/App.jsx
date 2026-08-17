@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Route, Routes, useSearchParams } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { CategoryPills } from './components/common/CategoryPills';
@@ -10,23 +11,21 @@ import { EditorsPicksWidget } from './components/feed/EditorsPicksWidget';
 import { WeatherWidget } from './components/feed/WeatherWidget';
 import { ArticleDetail } from './components/article/ArticleDetail';
 import { SearchResults } from './components/search/SearchResults';
-import { AdminDashboard } from './components/admin/AdminDashboard';
-import { ArticleEditor } from './components/admin/ArticleEditor';
 import { AdminLogin } from './components/admin/AdminLogin';
-import { storageService } from './services/storageService';
-import { useAuth, AuthProvider } from './context/AuthContext';
+import { AdminRoutes } from './components/admin/AdminRoutes';
+import { newsService } from './services/newsService';
 
-function MainApp() {
-  const { isLoggedIn, isAuthModalOpen, closeAuthModal } = useAuth();
+function PublicApp() {
+  const [searchParams] = useSearchParams();
   
   const [categories, setCategories] = useState([]);
   const [articles, setArticles] = useState([]);
   const [activeCategory, setActiveCategory] = useState('home');
   
   // Navigation View State
-  const [currentView, setCurrentViewState] = useState('home'); // 'home', 'article', 'search', 'admin-dashboard', 'admin-editor'
+  const [currentView, setCurrentViewState] = useState(() => searchParams.get('article') ? 'article' : 'home');
   const [viewHistory, setViewHistory] = useState([]);
-  const [selectedArticleId, setSelectedArticleId] = useState(null);
+  const [selectedArticleId, setSelectedArticleId] = useState(() => searchParams.get('article'));
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   
@@ -41,15 +40,37 @@ function MainApp() {
     day: 'numeric'
   });
 
-  // Initialize & Load Data
+  // Load the publicly readable data from Supabase. RLS is the security boundary.
   useEffect(() => {
-    storageService.init();
-    setCategories(storageService.getCategories());
-    loadArticles();
-  }, [currentView, activeCategory]);
+    let active = true;
+    const loadInitialData = async () => {
+      try {
+        const [nextCategories, nextArticles] = await Promise.all([
+          newsService.getCategories(),
+          newsService.getPublicArticles(),
+        ]);
+        if (active) {
+          setCategories(nextCategories);
+          setArticles(nextArticles);
+        }
+      } catch (error) {
+        console.error('Unable to load public news data.', error);
+      }
+    };
+    loadInitialData();
+    return () => { active = false; };
+  }, []);
 
-  const loadArticles = () => {
-    const fetched = storageService.getArticles(false); // Only published for public site
+  useEffect(() => {
+    const articleId = searchParams.get('article');
+    if (articleId) {
+      setSelectedArticleId(articleId);
+      setCurrentViewState('article');
+    }
+  }, [searchParams]);
+
+  const loadArticles = async () => {
+    const fetched = await newsService.getPublicArticles();
     setArticles(fetched);
   };
 
@@ -107,10 +128,14 @@ function MainApp() {
     window.scrollTo(0, 0);
   };
 
-  const handleSearchSubmit = (query) => {
+  const handleSearchSubmit = async (query) => {
     setSearchQuery(query);
-    const results = storageService.searchArticles(query, false);
-    setSearchResults(results);
+    try {
+      setSearchResults(await newsService.searchPublicArticles(query));
+    } catch (error) {
+      console.error('Unable to search articles.', error);
+      setSearchResults([]);
+    }
     navigateToView('search');
     window.scrollTo(0, 0);
   };
@@ -119,18 +144,6 @@ function MainApp() {
     setActiveCategory(catSlug);
     navigateToView('home');
     setVisibleArticleLimit(6);
-    window.scrollTo(0, 0);
-  };
-
-  const handleEditArticleFromAdmin = (id) => {
-    setSelectedArticleId(id);
-    navigateToView('admin-editor');
-    window.scrollTo(0, 0);
-  };
-
-  const handleCreateNewArticle = () => {
-    setSelectedArticleId(null);
-    navigateToView('admin-editor');
     window.scrollTo(0, 0);
   };
 
@@ -160,24 +173,19 @@ function MainApp() {
         onSelectCategory={handleSelectCategory}
         onOpenArticle={handleOpenArticle}
         onSearchSubmit={handleSearchSubmit}
-        currentView={currentView}
-        setCurrentView={navigateToView}
+        getAutocompleteSuggestions={newsService.getAutocompleteSuggestions}
       />
 
       {/* Main Page Area */}
       <div className="main-content-wrapper">
         <main className="content-body" style={{ marginLeft: 'var(--sidebar-width)' }}>
           
-          {/* Admin Login Modal */}
-          {isAuthModalOpen && <AdminLogin onClose={closeAuthModal} />}
-
           {/* View 1: Article Reader */}
           {currentView === 'article' && (
             <ArticleDetail
               articleId={selectedArticleId}
               onBack={goBack}
               onOpenArticle={handleOpenArticle}
-              onEditArticle={handleEditArticleFromAdmin}
             />
           )}
 
@@ -191,28 +199,7 @@ function MainApp() {
             />
           )}
 
-          {/* View 3: Admin CMS Dashboard */}
-          {currentView === 'admin-dashboard' && (
-            <AdminDashboard
-              onCreateArticle={handleCreateNewArticle}
-              onEditArticle={handleEditArticleFromAdmin}
-              onOpenArticle={handleOpenArticle}
-            />
-          )}
-
-          {/* View 4: Admin CMS Editor */}
-          {currentView === 'admin-editor' && (
-            <ArticleEditor
-              articleId={selectedArticleId}
-              onSaveSuccess={() => {
-                loadArticles();
-                navigateToView('admin-dashboard');
-              }}
-              onCancel={() => navigateToView('admin-dashboard')}
-            />
-          )}
-
-          {/* View 5: Homepage / Category Feed */}
+          {/* Homepage / Category Feed */}
           {currentView === 'home' && (
             <div className="gn-feed-view animate-fade-in">
               
@@ -526,8 +513,10 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <Routes>
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route path="*" element={<PublicApp />} />
+    </Routes>
   );
 }

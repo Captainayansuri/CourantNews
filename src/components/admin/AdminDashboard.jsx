@@ -1,34 +1,53 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Plus, Edit, Trash2, Eye, ShieldAlert, Sparkles, Star, Search,
   FileText, CheckCircle2, Clock, BarChart3, ExternalLink
 } from 'lucide-react';
-import { storageService } from '../../services/storageService';
+import { newsService } from '../../services/newsService';
+import { useAuth } from '../../context/AuthContext';
 
 export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }) => {
-  const [articles, setArticles] = useState(storageService.getArticles(true));
+  const { profile } = useAuth();
+  const [articles, setArticles] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
   const [filterQuery, setFilterQuery] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const refreshArticles = () => {
-    setArticles(storageService.getArticles(true));
-  };
-
-  const handleDelete = (id, title) => {
-    if (confirm(`Delete article "${title}"?`)) {
-      storageService.deleteArticle(id);
-      refreshArticles();
+  const refreshArticles = async () => {
+    setIsLoading(true);
+    try {
+      setArticles(await newsService.getAdminArticles());
+      setError('');
+    } catch (loadError) {
+      setError('Unable to load articles. Confirm that the Supabase migration has been run and your account has a staff role.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleToggleFlag = (id, flagName) => {
+  useEffect(() => { refreshArticles(); }, []);
+
+  const handleDelete = async (id, title) => {
+    if (confirm(`Delete article "${title}"?`)) {
+      try {
+        await newsService.deleteArticle(id);
+        await refreshArticles();
+      } catch (deleteError) {
+        setError('This article could not be deleted. Only administrators can delete articles.');
+      }
+    }
+  };
+
+  const handleToggleFlag = async (id, flagName) => {
     const art = articles.find(a => a.id === id);
     if (art) {
-      storageService.saveArticle({
-        ...art,
-        [flagName]: !art[flagName]
-      });
-      refreshArticles();
+      try {
+        await newsService.saveArticle({ ...art, [flagName]: !art[flagName] });
+        await refreshArticles();
+      } catch (saveError) {
+        setError('This article could not be updated. Editors can edit only their own articles.');
+      }
     }
   };
 
@@ -67,6 +86,8 @@ export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }
           <span>New Article</span>
         </button>
       </div>
+
+      {error && <div className="gn-login-error">{error}</div>}
 
       {/* Analytics Overview Cards */}
       <div className="gn-stats-grid">
@@ -153,7 +174,9 @@ export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }
               </tr>
             </thead>
             <tbody>
-              {filteredArticles.length === 0 ? (
+              {isLoading ? (
+                <tr><td colSpan={7} className="text-center py-4">Loading articles…</td></tr>
+              ) : filteredArticles.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-4">No articles found matching filters.</td>
                 </tr>
@@ -224,13 +247,15 @@ export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }
                         >
                           <Edit size={16} />
                         </button>
-                        <button
-                          className="gn-icon-action danger"
-                          onClick={() => handleDelete(art.id, art.title)}
-                          title="Delete Article"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {profile?.role === 'admin' && (
+                          <button
+                            className="gn-icon-action danger"
+                            onClick={() => handleDelete(art.id, art.title)}
+                            title="Delete Article"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -1,9 +1,10 @@
 import { INITIAL_ARTICLES, INITIAL_CATEGORIES, INITIAL_MEDIA_ASSETS } from './seedData';
 
+// Legacy compatibility module. The active application reads and writes news data through
+// Supabase services; do not import this module for runtime article, category, or media data.
 const ARTICLES_KEY = 'gn_articles_v1';
 const CATEGORIES_KEY = 'gn_categories_v1';
 const MEDIA_KEY = 'gn_media_v1';
-const AUTH_KEY = 'gn_admin_auth_v1';
 
 export const storageService = {
   // Initialize default data if empty
@@ -173,33 +174,6 @@ export const storageService = {
     const assets = this.getMediaAssets();
     const filtered = assets.filter(m => m.id !== id);
     localStorage.setItem(MEDIA_KEY, JSON.stringify(filtered));
-  },
-
-  // Auth API
-  loginAdmin(username, password) {
-    // Single admin account credentials
-    if ((username === 'admin' || username === 'admin@googlenews.com') && password === 'admin123') {
-      const session = {
-        token: 'token_' + Date.now(),
-        user: { name: 'Editor-in-Chief', role: 'admin', email: 'admin@googlenews.com' }
-      };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(session));
-      return { success: true, user: session.user };
-    }
-    return { success: false, message: 'Invalid credentials. Use admin / admin123' };
-  },
-
-  getAdminSession() {
-    try {
-      const session = localStorage.getItem(AUTH_KEY);
-      return session ? JSON.parse(session) : null;
-    } catch (e) {
-      return null;
-    }
-  },
-
-  logoutAdmin() {
-    localStorage.removeItem(AUTH_KEY);
   },
 
   // Helpers

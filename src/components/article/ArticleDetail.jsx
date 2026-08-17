@@ -1,33 +1,35 @@
 import React, { useEffect, useState } from 'react';
+import DOMPurify from 'dompurify';
 import {
   ArrowLeft, Clock, Share2, Bookmark, Check, Edit, Eye, BookOpen, ExternalLink, Sparkles
 } from 'lucide-react';
-import { storageService } from '../../services/storageService';
-import { useAuth } from '../../context/AuthContext';
+import { newsService } from '../../services/newsService';
 import { ArticleCard } from '../feed/ArticleCard';
 
-export const ArticleDetail = ({ articleId, onBack, onOpenArticle, onEditArticle }) => {
+export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
   const [article, setArticle] = useState(null);
   const [relatedArticles, setRelatedArticles] = useState([]);
   const [copied, setCopied] = useState(false);
-  const { isLoggedIn } = useAuth();
-
   useEffect(() => {
+    let active = true;
     if (articleId) {
-      const art = storageService.getArticleById(articleId);
-      if (art) {
-        setArticle(art);
-        storageService.incrementViewCount(art.id);
-
-        // Fetch related articles based on category or tags
-        const categoryArticles = storageService
-          .getArticlesByCategory(art.category)
-          .filter(a => a.id !== art.id)
-          .slice(0, 3);
-        setRelatedArticles(categoryArticles);
-      }
+      const loadArticle = async () => {
+        try {
+          const art = await newsService.getPublicArticleById(articleId);
+          if (!art || !active) return;
+          setArticle(art);
+          const categoryArticles = (await newsService.getPublicArticles())
+            .filter(a => a.id !== art.id && a.category === art.category)
+            .slice(0, 3);
+          if (active) setRelatedArticles(categoryArticles);
+        } catch (error) {
+          if (active) setArticle(null);
+        }
+      };
+      loadArticle();
       window.scrollTo(0, 0);
     }
+    return () => { active = false; };
   }, [articleId]);
 
   if (!article) {
@@ -68,13 +70,6 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle, onEditArticle 
         </button>
 
         <div className="gn-article-actions">
-          {isLoggedIn && (
-            <button className="gn-action-btn gn-edit-btn" onClick={() => onEditArticle(article.id)}>
-              <Edit size={16} />
-              <span>Edit Post</span>
-            </button>
-          )}
-
           <button className="gn-action-btn" onClick={handleCopyLink} title="Copy article link">
             {copied ? <Check size={16} className="text-success" /> : <Share2 size={16} />}
             <span>{copied ? 'Copied!' : 'Share'}</span>
@@ -120,7 +115,13 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle, onEditArticle 
       {/* Main Body Content */}
       <div
         className="gn-article-body"
-        dangerouslySetInnerHTML={{ __html: article.body }}
+        dangerouslySetInnerHTML={{
+          __html: DOMPurify.sanitize(article.body, {
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h2', 'h3', 'h4', 'blockquote', 'ul', 'ol', 'li', 'a'],
+            ALLOWED_ATTR: ['href', 'target', 'rel', 'class'],
+            FORBID_TAGS: ['iframe', 'script', 'style'],
+          }),
+        }}
       />
 
       {/* Article Tags */}

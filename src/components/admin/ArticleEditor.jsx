@@ -3,11 +3,13 @@ import {
   Save, ArrowLeft, Image as ImageIcon, Sparkles, Star, ShieldAlert,
   Calendar, Tag, Eye, Trash2, Check, Video, Bold, Heading, Quote, List
 } from 'lucide-react';
-import { storageService } from '../../services/storageService';
+import { newsService } from '../../services/newsService';
+import { useAuth } from '../../context/AuthContext';
 import { MediaLibraryModal } from './MediaLibraryModal';
 
 export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
-  const categories = storageService.getCategories();
+  const { profile } = useAuth();
+  const [categories, setCategories] = useState([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -30,18 +32,30 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
   const [tagInput, setTagInput] = useState('');
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [isSavedAlert, setIsSavedAlert] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (articleId) {
-      const existing = storageService.getArticleById(articleId);
-      if (existing) {
-        setFormData({
-          ...existing,
-          tags: existing.tags || [],
-          published_at: existing.published_at ? new Date(existing.published_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
-        });
+    let active = true;
+    const loadEditorData = async () => {
+      try {
+        const nextCategories = await newsService.getCategories();
+        if (active) setCategories(nextCategories);
+        if (articleId) {
+          const existing = await newsService.getAdminArticleById(articleId);
+          if (active && existing) {
+            setFormData({
+              ...existing,
+              tags: existing.tags || [],
+              published_at: existing.published_at ? new Date(existing.published_at).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
+            });
+          }
+        }
+      } catch (loadError) {
+        if (active) setError('Unable to load this editor. Confirm the Supabase migration and your editor role.');
       }
-    }
+    };
+    loadEditorData();
+    return () => { active = false; };
   }, [articleId]);
 
   // Auto slug generation from title if title changes and user hasn't edited slug manually
@@ -50,7 +64,12 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
     setFormData(prev => ({
       ...prev,
       title: val,
-      slug: prev.id ? prev.slug : storageService.generateSlug(val)
+      slug: prev.id ? prev.slug : val
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
     }));
   };
 
@@ -85,13 +104,13 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
     if (syntax === 'h3') replacement = `<h3>${text.substring(start, end) || 'Subheading Title'}</h3>`;
     if (syntax === 'quote') replacement = `<blockquote class="story-blockquote">${text.substring(start, end) || 'Pull quote text here...'}</blockquote>`;
     if (syntax === 'paragraph') replacement = `<p>${text.substring(start, end) || 'New paragraph text...'}</p>`;
-    if (syntax === 'video') replacement = `<div className="video-embed-frame"><iframe width="100%" height="365" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe></div>`;
+    if (syntax === 'video') replacement = `<p><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">Watch related video</a></p>`;
 
     const newBody = text.substring(0, start) + replacement + text.substring(end);
     setFormData(prev => ({ ...prev, body: newBody }));
   };
 
-  const handleSubmit = (e, targetStatus) => {
+  const handleSubmit = async (e, targetStatus) => {
     if (e) e.preventDefault();
     if (!formData.title.trim()) {
       alert('Please enter an article title.');
@@ -104,18 +123,27 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
       published_at: new Date(formData.published_at).toISOString()
     };
 
-    storageService.saveArticle(payload);
-    setIsSavedAlert(true);
-    setTimeout(() => {
-      setIsSavedAlert(false);
-      onSaveSuccess();
-    }, 600);
+    try {
+      await newsService.saveArticle(payload);
+      setError('');
+      setIsSavedAlert(true);
+      setTimeout(() => {
+        setIsSavedAlert(false);
+        onSaveSuccess();
+      }, 600);
+    } catch (saveError) {
+      setError(saveError.message || 'Unable to save this article.');
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (formData.id && confirm('Are you sure you want to delete this article?')) {
-      storageService.deleteArticle(formData.id);
-      onSaveSuccess();
+      try {
+        await newsService.deleteArticle(formData.id);
+        onSaveSuccess();
+      } catch (deleteError) {
+        setError('Only administrators can delete articles.');
+      }
     }
   };
 
@@ -130,7 +158,7 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
         </button>
 
         <div className="gn-editor-header-actions">
-          {formData.id && (
+          {formData.id && profile?.role === 'admin' && (
             <button className="gn-btn-danger" onClick={handleDelete}>
               <Trash2 size={16} /> Delete
             </button>
@@ -161,6 +189,8 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
           <span>Article saved successfully!</span>
         </div>
       )}
+
+      {error && <div className="gn-login-error">{error}</div>}
 
       <form className="gn-editor-grid" onSubmit={(e) => handleSubmit(e)}>
         

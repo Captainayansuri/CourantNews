@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Menu, X, User, LogOut, LayoutDashboard, Sliders, ChevronDown } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { storageService } from '../../services/storageService';
+import { Search, Menu, X, ShieldCheck } from 'lucide-react';
 
 export const Header = ({
   onToggleSidebar,
@@ -9,30 +7,38 @@ export const Header = ({
   onSelectCategory,
   onOpenArticle,
   onSearchSubmit,
-  currentView,
-  setCurrentView
+  getAutocompleteSuggestions,
 }) => {
-  const { user, isLoggedIn, logout, openAuthModal } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   
   const searchInputRef = useRef(null);
   const searchContainerRef = useRef(null);
 
   // Handle autocomplete search
   useEffect(() => {
-    if (searchQuery.trim().length >= 2) {
-      const matches = storageService.getAutocompleteSuggestions(searchQuery);
-      setSuggestions(matches);
-      setShowSuggestions(true);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-  }, [searchQuery]);
+    let active = true;
+    const loadSuggestions = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+      try {
+        const matches = await getAutocompleteSuggestions(searchQuery);
+        if (active) {
+          setSuggestions(matches);
+          setShowSuggestions(matches.length > 0);
+        }
+      } catch (error) {
+        if (active) setShowSuggestions(false);
+      }
+    };
+    loadSuggestions();
+    return () => { active = false; };
+  }, [searchQuery, getAutocompleteSuggestions]);
 
   // Click outside search container
   useEffect(() => {
@@ -86,77 +92,16 @@ export const Header = ({
             <Menu size={22} />
           </button>
 
-          {/* Top-Left Sign in entry point / Admin Badge */}
-          {isLoggedIn ? (
-            <div className="gn-user-menu-wrapper">
-              <button
-                className="gn-admin-badge-btn"
-                onClick={() => setShowUserMenu(!showUserMenu)}
-              >
-                <div className="gn-admin-avatar">A</div>
-                <span className="gn-admin-label">Admin CMS</span>
-                <ChevronDown size={14} />
-              </button>
-
-              {showUserMenu && (
-                <div className="gn-dropdown-menu">
-                  <div className="gn-dropdown-header">
-                    <strong>{user.name}</strong>
-                    <div className="gn-dropdown-sub">{user.email}</div>
-                  </div>
-                  <hr className="gn-dropdown-divider" />
-                  <button
-                    className="gn-dropdown-item"
-                    onClick={() => {
-                      setCurrentView('admin-dashboard');
-                      setShowUserMenu(false);
-                    }}
-                  >
-                    <LayoutDashboard size={16} />
-                    <span>CMS Dashboard</span>
-                  </button>
-                  <button
-                    className="gn-dropdown-item"
-                    onClick={() => {
-                      setCurrentView('admin-editor');
-                      setShowUserMenu(false);
-                    }}
-                  >
-                    <Sliders size={16} />
-                    <span>Create New Article</span>
-                  </button>
-                  <hr className="gn-dropdown-divider" />
-                  <button
-                    className="gn-dropdown-item text-danger"
-                    onClick={() => {
-                      logout();
-                      setShowUserMenu(false);
-                      setCurrentView('home');
-                    }}
-                  >
-                    <LogOut size={16} />
-                    <span>Sign out</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button
-              className="gn-signin-btn"
-              onClick={openAuthModal}
-              title="Admin Login"
-            >
-              <User size={18} />
-              <span>Sign in</span>
-            </button>
-          )}
+          <a className="gn-signin-btn" href="/admin/login" title="Editorial administration">
+            <ShieldCheck size={18} />
+            <span>Admin</span>
+          </a>
 
           {/* Logo / Wordmark */}
           <div
             className="gn-logo"
             onClick={() => {
               onSelectCategory('home');
-              setCurrentView('home');
             }}
             role="button"
             tabIndex={0}

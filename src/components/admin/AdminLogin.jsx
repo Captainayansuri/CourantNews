@@ -1,26 +1,35 @@
 import React, { useState } from 'react';
 import { Lock, X, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminLogin = ({ onClose }) => {
-  const { login } = useAuth();
-  const [username, setUsername] = useState('admin');
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
 
-    setTimeout(() => {
-      const res = login(username, password);
-      if (!res.success) {
-        setError(res.message);
+    try {
+      const res = await signIn(email, password);
+      if (res.error) {
+        setError(res.error.message);
+      } else if (res.profile?.role === 'admin' || res.profile?.role === 'editor') {
+        navigate('/admin', { replace: true });
+      } else {
+        setError('This account is authenticated but is not assigned an editor or administrator role.');
       }
+    } catch (loginError) {
+      setError(loginError?.message || 'Unable to sign in. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 400);
+    }
   };
 
   return (
@@ -49,13 +58,14 @@ export const AdminLogin = ({ onClose }) => {
 
         <form onSubmit={handleSubmit} className="gn-login-form">
           <div className="gn-form-group">
-            <label>Username / Email</label>
+            <label>Email</label>
             <input
-              type="text"
+              type="email"
               required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="editor@example.com"
+              autoComplete="email"
             />
           </div>
 
@@ -66,12 +76,8 @@ export const AdminLogin = ({ onClose }) => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="admin123"
+              autoComplete="current-password"
             />
-          </div>
-
-          <div className="gn-login-hint">
-            <span>Default Admin Credentials: <code>admin</code> / <code>admin123</code></span>
           </div>
 
           <button
@@ -79,7 +85,7 @@ export const AdminLogin = ({ onClose }) => {
             className="gn-login-submit-btn"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Authenticating...' : 'Sign in to Admin CMS'}
+            {isSubmitting ? 'Signing in...' : 'Sign in to administration'}
           </button>
         </form>
 

@@ -1,23 +1,73 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Plus, Image as ImageIcon, Check } from 'lucide-react';
-import { storageService } from '../../services/storageService';
+import { newsService } from '../../services/newsService';
 
 export const MediaLibraryModal = ({ onSelectImage, onClose }) => {
-  const [assets, setAssets] = useState(storageService.getMediaAssets());
-  const [newUrl, setNewUrl] = useState('');
+  const [assets, setAssets] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [newName, setNewName] = useState('');
+  const [error, setError] = useState('');
+  const [isLoadingAssets, setIsLoadingAssets] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  const handleAddMedia = (e) => {
-    e.preventDefault();
-    if (newUrl.trim()) {
-      const created = storageService.saveMediaAsset({
-        name: newName.trim() || 'Uploaded Media',
-        url: newUrl.trim(),
-        category: 'general'
+  useEffect(() => {
+    let active = true;
+    newsService.getMediaAssets()
+      .then((mediaAssets) => {
+        if (active) setAssets(mediaAssets);
+      })
+      .catch(() => {
+        if (active) setError('Unable to load the media library.');
+      })
+      .finally(() => {
+        if (active) setIsLoadingAssets(false);
       });
-      setAssets([created, ...assets]);
-      setNewUrl('');
+    return () => { active = false; };
+  }, []);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setSelectedFile(null);
+      setError('Choose a valid image file.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setSelectedFile(null);
+      setError('Image files must be 10 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedFile(file);
+    setError('');
+  };
+
+  const handleAddMedia = async (e) => {
+    e.preventDefault();
+    if (!selectedFile || isUploading) return;
+
+    setIsUploading(true);
+    setError('');
+    try {
+      const created = await newsService.uploadMediaAsset({
+        file: selectedFile,
+        name: newName,
+        category: 'general',
+      });
+      setAssets((current) => [created, ...current]);
+      setSelectedFile(null);
       setNewName('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (uploadError) {
+      setError(uploadError.message || 'Unable to upload this image.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -33,25 +83,32 @@ export const MediaLibraryModal = ({ onSelectImage, onClose }) => {
 
         <form onSubmit={handleAddMedia} className="gn-media-add-form">
           <input
-            type="url"
-            placeholder="Paste Image URL (https://...)"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
             required
-            value={newUrl}
-            onChange={(e) => setNewUrl(e.target.value)}
+            onChange={handleFileChange}
+            disabled={isUploading}
           />
           <input
             type="text"
-            placeholder="Caption / Name (Optional)"
+            placeholder="Image name (optional)"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            disabled={isUploading}
           />
-          <button type="submit" className="gn-add-media-btn">
-            <Plus size={16} /> Add Image
+          <button type="submit" className="gn-add-media-btn" disabled={!selectedFile || isUploading}>
+            <Plus size={16} /> {isUploading ? 'Uploading...' : 'Upload image'}
           </button>
         </form>
 
+        {selectedFile && <div className="gn-media-file-name">Selected: {selectedFile.name}</div>}
+
+        {error && <div className="gn-login-error">{error}</div>}
+
         <div className="gn-media-grid">
-          {assets.map((m) => (
+          {isLoadingAssets && <div className="gn-media-loading">Loading media…</div>}
+          {!isLoadingAssets && assets.map((m) => (
             <div
               key={m.id}
               className="gn-media-item"
@@ -118,12 +175,32 @@ export const MediaLibraryModal = ({ onSelectImage, onClose }) => {
             font-weight: 600;
           }
 
+          .gn-add-media-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+          }
+
+          .gn-media-file-name {
+            margin: -8px 0 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
           .gn-media-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 12px;
             overflow-y: auto;
             padding-right: 4px;
+          }
+
+          .gn-media-loading {
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 12px 0;
           }
 
           .gn-media-item {
