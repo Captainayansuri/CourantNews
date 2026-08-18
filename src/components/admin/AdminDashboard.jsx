@@ -336,7 +336,7 @@ export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }
         }
 
         .gn-stat-icon.blue { background-color: var(--accent-light); color: var(--accent-color); }
-        .gn-stat-icon.green { background-color: #e6f4ea; color: #137333; }
+        .gn-stat-icon.green { background-color: var(--success-bg); color: var(--success-text); }
         .gn-stat-icon.orange { background-color: #feefc3; color: #b06000; }
         .gn-stat-icon.purple { background-color: #f3e8fd; color: #9334e8; }
 
@@ -483,7 +483,7 @@ export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }
           border-radius: 12px;
         }
 
-        .gn-status-pill.published { background-color: #e6f4ea; color: #137333; }
+        .gn-status-pill.published { background-color: var(--success-bg); color: var(--success-text); }
         .gn-status-pill.draft { background-color: #feefc3; color: #b06000; }
 
         .gn-table-flags {
@@ -521,8 +521,8 @@ export const AdminDashboard = ({ onCreateArticle, onEditArticle, onOpenArticle }
         }
 
         .gn-icon-action.danger:hover {
-          background-color: #fce8e6;
-          color: #c5221f;
+          background-color: var(--danger-bg);
+          color: var(--danger-text);
         }
       `}</style>
     </div>

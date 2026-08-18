@@ -42,11 +42,9 @@ export const EditorsPicksWidget = ({ articles = [], onOpenArticle }) => {
 
       <style>{`
         .gn-editors-widget {
-          background:
-            linear-gradient(180deg, rgba(26, 115, 232, 0.05), transparent 24%),
-            var(--bg-surface);
+          background: var(--bg-surface);
           border: 1px solid var(--border-color);
-          border-radius: 20px;
+          border-radius: 12px;
           padding: 16px;
           margin-bottom: 24px;
           box-shadow: var(--shadow-subtle);

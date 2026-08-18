@@ -31,7 +31,6 @@ function PublicApp() {
   
   // Layout States
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   const [visibleArticleLimit, setVisibleArticleLimit] = useState(6);
 
   const todayDate = new Date().toLocaleDateString('en-US', {
@@ -73,15 +72,6 @@ function PublicApp() {
     const fetched = await newsService.getPublicArticles();
     setArticles(fetched);
   };
-
-  // Dark Mode toggle
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
-    }
-  }, [darkMode]);
 
   const navigateToView = (nextView) => {
     setViewHistory(prev => [...prev, currentView]);
@@ -178,6 +168,15 @@ function PublicApp() {
 
       {/* Main Page Area */}
       <div className="main-content-wrapper">
+        <Sidebar
+          categories={categories}
+          activeCategory={activeCategory}
+          onSelectCategory={handleSelectCategory}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          currentView={currentView}
+          setCurrentView={setCurrentViewState}
+        />
         <main className="content-body" style={{ marginLeft: 'var(--sidebar-width)' }}>
           
           {/* View 1: Article Reader */}
@@ -218,16 +217,16 @@ function PublicApp() {
                 />
               )}
 
-              {/* Briefing Header for Home */}
+              {/* Briefing header and compact local weather */}
               {activeCategory === 'home' && (
-                <div className="gn-briefing-banner">
-                  <div className="gn-briefing-copy">
-                    <p className="gn-briefing-label">Your <span className="gn-highlight-word">briefing</span></p>
-                    <h1>{todayDate}</h1>
+                <div className="gn-briefing-row">
+                  <div className="gn-briefing-banner">
+                    <div className="gn-briefing-copy">
+                      <p className="gn-briefing-label">Your <span className="gn-highlight-word">briefing</span></p>
+                      <h1>{todayDate}</h1>
+                    </div>
                   </div>
-                  <p className="gn-briefing-summary">
-                    A curated overview of the <span className="gn-highlight-word">latest headlines</span>, top stories, and key developments for your day.
-                  </p>
+                  <div className="gn-briefing-weather"><WeatherWidget /></div>
                 </div>
               )}
 
@@ -331,7 +330,6 @@ function PublicApp() {
 
                 {/* Right Column Sidebar */}
                 <div className="gn-feed-right-column">
-                  <WeatherWidget />
                   <EditorsPicksWidget
                     articles={articles}
                     onOpenArticle={handleOpenArticle}
@@ -347,16 +345,12 @@ function PublicApp() {
 
       <style>{`
         .gn-briefing-banner {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          padding: 28px 30px;
-          background: linear-gradient(180deg, rgba(26, 115, 232, 0.08), rgba(255, 255, 255, 0.72));
-          border: 1px solid rgba(26, 115, 232, 0.18);
-          border-radius: 28px;
-          margin-bottom: 24px;
-          box-shadow: var(--shadow-subtle);
+          padding: 8px 0 14px;
+          border-bottom: 1px solid var(--border-color);
         }
+
+        .gn-briefing-row { display: grid; grid-template-columns: minmax(0, 1fr) 292px; gap: 28px; align-items: start; margin: 4px 0 24px; }
+        .gn-briefing-weather .gn-weather-widget { margin: 0; }
 
         .gn-briefing-copy {
           display: flex;
@@ -369,21 +363,14 @@ function PublicApp() {
           letter-spacing: 0.16em;
           font-size: 12px;
           font-weight: 700;
-          color: var(--accent-color);
+          color: var(--brand-blue);
         }
 
         .gn-briefing-banner h1 {
-          font-size: clamp(40px, 5vw, 58px);
-          line-height: 1.04;
+          font-size: clamp(28px, 3.2vw, 40px);
+          line-height: 1.12;
           color: var(--text-primary);
           margin: 0;
-        }
-
-        .gn-briefing-summary {
-          font-size: 15px;
-          color: var(--text-secondary);
-          max-width: 720px;
-          margin-top: 6px;
         }
 
         .gn-home-topstories-header {
@@ -396,7 +383,7 @@ function PublicApp() {
         }
 
         .gn-home-topstories-header h2 {
-          font-size: 22px;
+          font-size: 26px;
           font-weight: 800;
           color: var(--text-primary);
           margin: 0;
@@ -421,7 +408,7 @@ function PublicApp() {
         .gn-feed-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.55fr) minmax(300px, 340px);
-          gap: 28px;
+          gap: 24px;
           align-items: start;
         }
 
@@ -473,11 +460,13 @@ function PublicApp() {
         }
 
         .gn-highlight-word {
-          color: #fbbc05;
+          color: var(--accent-yellow);
           font-weight: 800;
         }
 
         @media (max-width: 1080px) {
+          .gn-briefing-row { grid-template-columns: 1fr; gap: 12px; }
+          .gn-briefing-weather { max-width: 360px; }
           .gn-feed-grid {
             grid-template-columns: 1fr;
           }
@@ -491,9 +480,8 @@ function PublicApp() {
             margin-left: 0 !important;
           }
 
-          .gn-briefing-banner {
-            padding: 20px;
-          }
+          .gn-briefing-row { margin-bottom: 18px; }
+          .gn-briefing-weather { max-width: none; }
 
           .gn-view-all-btn {
             width: 100%;

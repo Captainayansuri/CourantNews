@@ -86,11 +86,10 @@ export const TopStoryCard = ({ article, relatedArticles = [], onOpenArticle }) =
 
       <style>{`
         .gn-top-story-card {
-          background:
-            linear-gradient(180deg, rgba(26, 115, 232, 0.07), transparent 30%),
-            var(--bg-surface);
-          border: 1px solid rgba(26, 115, 232, 0.15);
-          border-radius: 24px;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-top: 3px solid var(--brand-blue);
+          border-radius: var(--card-radius);
           padding: 24px;
           margin-bottom: 24px;
           box-shadow: var(--shadow-subtle);

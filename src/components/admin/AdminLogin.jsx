@@ -150,8 +150,8 @@ export const AdminLogin = ({ onClose }) => {
           }
 
           .gn-login-error {
-            background-color: #fce8e6;
-            color: #c5221f;
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 13px;

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Menu, X, ShieldCheck } from 'lucide-react';
+import { Search, Menu, X, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 export const Header = ({
   onToggleSidebar,
@@ -9,6 +10,7 @@ export const Header = ({
   onSearchSubmit,
   getAutocompleteSuggestions,
 }) => {
+  const { theme, setTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -77,11 +79,17 @@ export const Header = ({
     setIsSearchExpanded(false);
   };
 
+  const cycleMobileTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light');
+  };
+
+  const MobileThemeIcon = theme === 'dark' ? Moon : theme === 'system' ? Monitor : Sun;
+
   return (
     <header className="gn-header">
       <div className="gn-header-content">
         
-        {/* Left Section: Mobile Menu + Logo + Sign In Button */}
+        {/* Left section: navigation menu and CourantNews wordmark */}
         <div className="gn-header-left">
           <button
             className="gn-icon-btn hamburger-btn"
@@ -91,11 +99,6 @@ export const Header = ({
           >
             <Menu size={22} />
           </button>
-
-          <a className="gn-signin-btn" href="/admin/login" title="Editorial administration">
-            <ShieldCheck size={18} />
-            <span>Admin</span>
-          </a>
 
           {/* Logo / Wordmark */}
           <div
@@ -160,6 +163,15 @@ export const Header = ({
           )}
         </div>
 
+        <div className="gn-theme-switcher" aria-label="Color theme">
+          <button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')} title="Light theme" aria-label="Light theme"><Sun size={16} /></button>
+          <button className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')} title="Dark theme" aria-label="Dark theme"><Moon size={16} /></button>
+          <button className={theme === 'system' ? 'active' : ''} onClick={() => setTheme('system')} title="Use system theme" aria-label="Use system theme"><Monitor size={16} /></button>
+        </div>
+        <button className="gn-mobile-theme-toggle" onClick={cycleMobileTheme} title={`Theme: ${theme}. Tap to change`} aria-label={`Theme: ${theme}. Tap to change`}>
+          <MobileThemeIcon size={19} />
+        </button>
+
       </div>
 
       <style>{`
@@ -190,8 +202,8 @@ export const Header = ({
         .gn-header-left {
           display: flex;
           align-items: center;
-          gap: 18px;
-          min-width: 240px;
+          gap: 10px;
+          min-width: 210px;
         }
 
         .gn-icon-btn {
@@ -208,24 +220,6 @@ export const Header = ({
         .gn-icon-btn:hover {
           background-color: var(--bg-hover);
           color: var(--text-primary);
-        }
-
-        .gn-signin-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 16px;
-          border-radius: 20px;
-          border: 1px solid var(--border-color);
-          color: var(--accent-color);
-          font-weight: 500;
-          font-size: 14px;
-          transition: background-color 0.15s, border-color 0.15s;
-        }
-
-        .gn-signin-btn:hover {
-          background-color: var(--accent-light);
-          border-color: transparent;
         }
 
         .gn-admin-badge-btn {
@@ -313,8 +307,9 @@ export const Header = ({
 
         .gn-logo-brand {
           font-size: 24px;
-          font-weight: 700;
+          font-weight: 800;
           letter-spacing: -0.5px;
+          color: var(--brand-blue);
         }
 
         .gn-logo-sub {
@@ -330,6 +325,11 @@ export const Header = ({
           min-width: 420px;
           transition: all 0.2s ease;
         }
+        .gn-theme-switcher { display: flex; padding: 3px; gap: 2px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; }
+        .gn-theme-switcher button { width: 30px; height: 30px; color: var(--text-muted); border-radius: 7px; display: grid; place-items: center; }
+        .gn-theme-switcher button:hover { color: var(--accent-color); background: var(--accent-light); }
+        .gn-theme-switcher button.active { background: var(--brand-blue); color: #fff; box-shadow: 0 1px 3px rgba(11,42,111,.25); }
+        .gn-mobile-theme-toggle { display: none; }
 
         .gn-search-form {
           display: flex;
@@ -423,19 +423,28 @@ export const Header = ({
         }
 
         @media (max-width: 768px) {
+          .gn-header { height: var(--header-height); align-items: stretch; }
           .gn-logo-sub {
             display: none;
           }
-          .gn-admin-label {
-            display: none;
-          }
-          .gn-signin-btn span {
-            display: none;
-          }
-          .gn-signin-btn {
-            padding: 8px;
-            border-radius: 50%;
-          }
+          .gn-header-content { padding: 8px 12px 10px; gap: 8px; flex-wrap: wrap; align-content: start; }
+          .gn-header-left { min-width: 0; gap: 6px; flex: 1; }
+          .gn-logo-brand { font-size: 19px; }
+          .gn-search-container { order: 3; width: 100%; min-width: 0; flex: 0 0 100%; max-width: none; }
+          .gn-search-form { height: 46px; padding: 0 14px; border-color: var(--border-color); border-radius: 10px; }
+          .gn-search-input { font-size: 13px; }
+          .gn-theme-switcher { display: none; }
+          .gn-mobile-theme-toggle { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border: 1px solid var(--border-color); border-radius: 11px; color: var(--brand-blue); background: var(--accent-light); }
+          .gn-mobile-theme-toggle:hover { background: var(--brand-blue); color: #fff; }
+        }
+        @media (max-width: 480px) {
+          .gn-header-content { padding-left: 8px; padding-right: 8px; }
+          .gn-logo-brand { font-size: 18px; letter-spacing: -.7px; }
+          .gn-icon-btn { width: 38px; height: 42px; }
+        }
+        @media (max-width: 350px) {
+          .gn-logo-brand { font-size: 16px; }
+          .gn-mobile-theme-toggle { width: 40px; flex-basis: 40px; }
         }
       `}</style>
     </header>

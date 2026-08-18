@@ -461,15 +461,15 @@ export const ArticleEditor = ({ articleId, onSaveSuccess, onCancel }) => {
           gap: 4px;
           padding: 8px 14px;
           border-radius: 20px;
-          background-color: #fce8e6;
-          color: #c5221f;
+          background-color: var(--danger-bg);
+          color: var(--danger-text);
           font-size: 13px;
           font-weight: 500;
         }
 
         .gn-alert-success {
-          background-color: #e6f4ea;
-          color: #137333;
+          background-color: var(--success-bg);
+          color: var(--success-text);
           padding: 12px 16px;
           border-radius: 8px;
           display: flex;

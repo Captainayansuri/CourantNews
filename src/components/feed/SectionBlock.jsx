@@ -36,14 +36,9 @@ export const SectionBlock = ({ title, categorySlug, articles = [], onSelectCateg
 
       <style>{`
         .gn-section-block {
-          background:
-            linear-gradient(180deg, rgba(26, 115, 232, 0.04), transparent 24%),
-            var(--bg-surface);
-          border: 1px solid var(--border-color);
-          border-radius: 22px;
-          padding: 20px;
+          border-top: 1px solid var(--border-color);
+          padding: 20px 0 4px;
           margin-bottom: 24px;
-          box-shadow: var(--shadow-subtle);
         }
 
         .gn-section-header {
@@ -51,8 +46,7 @@ export const SectionBlock = ({ title, categorySlug, articles = [], onSelectCateg
           align-items: center;
           justify-content: space-between;
           margin-bottom: 16px;
-          padding-bottom: 12px;
-          border-bottom: 1px solid var(--border-subtle);
+          padding-bottom: 10px;
         }
 
         .gn-section-title {

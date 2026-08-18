@@ -169,17 +169,15 @@ export const WeatherWidget = () => {
 
       <style>{`
         .gn-weather-widget {
-          background: linear-gradient(135deg, #e8f0fe 0%, #ffffff 100%);
+          background: var(--bg-surface);
           border: 1px solid var(--border-color);
-          border-radius: 20px;
-          padding: 16px;
+          border-radius: 12px;
+          padding: 14px 16px;
           margin-bottom: 24px;
           box-shadow: var(--shadow-subtle);
         }
 
-        .dark-theme .gn-weather-widget {
-          background: linear-gradient(135deg, #2b384e 0%, #202124 100%);
-        }
+        .dark-theme .gn-weather-widget { background: var(--bg-surface); }
 
         .gn-weather-header {
           display: flex;

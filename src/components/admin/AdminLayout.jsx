@@ -1,11 +1,13 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FileText, LogOut, Newspaper, Plus, ShieldCheck } from 'lucide-react';
+import { FileText, LogOut, Newspaper, Plus, ShieldCheck, Sun, Moon, Monitor } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 export const AdminLayout = () => {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     await signOut();
@@ -22,6 +24,7 @@ export const AdminLayout = () => {
           <NavLink to="/admin/articles" className="cn-admin-nav-link"><FileText size={17} /> Articles</NavLink>
           <NavLink to="/admin/articles/new" className="cn-admin-nav-link"><Plus size={17} /> New article</NavLink>
         </nav>
+        <div className="cn-admin-theme" aria-label="Color theme"><button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}><Sun size={15}/></button><button className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')}><Moon size={15}/></button><button className={theme === 'system' ? 'active' : ''} onClick={() => setTheme('system')}><Monitor size={15}/></button></div>
         <div className="cn-admin-user">
           <strong>{profile?.email}</strong>
           <span>{profile?.role}</span>
@@ -32,12 +35,15 @@ export const AdminLayout = () => {
       <style>{`
         .cn-admin-shell { min-height: 100vh; display: grid; grid-template-columns: 250px minmax(0, 1fr); background: var(--bg-main); }
         .cn-admin-sidebar { position: sticky; top: 0; height: 100vh; padding: 28px 16px; background: var(--bg-surface); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 24px; }
-        .cn-admin-brand { color: var(--text-primary); font-size: 22px; font-weight: 800; text-decoration: none; padding: 0 10px; }
+        .cn-admin-brand { color: var(--brand-blue); font-size: 22px; font-weight: 800; text-decoration: none; padding: 0 10px; }
         .cn-admin-label { display: flex; gap: 8px; align-items: center; padding: 0 10px; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
         .cn-admin-nav { display: grid; gap: 6px; }
         .cn-admin-nav-link { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; color: var(--text-secondary); text-decoration: none; font-weight: 600; }
         .cn-admin-nav-link.active, .cn-admin-nav-link:hover { background: var(--accent-light); color: var(--accent-color); }
         .cn-admin-user { margin-top: auto; display: grid; gap: 5px; padding: 12px; background: var(--bg-hover); border-radius: 12px; font-size: 12px; color: var(--text-secondary); overflow-wrap: anywhere; }
+        .cn-admin-theme { display: flex; padding: 3px; width: max-content; gap: 2px; border: 1px solid var(--border-color); border-radius: 9px; }
+        .cn-admin-theme button { width: 28px; height: 26px; border-radius: 6px; color: var(--text-muted); display:grid; place-items:center; }
+        .cn-admin-theme button.active { background: var(--brand-blue); color:#fff; }
         .cn-admin-user strong { color: var(--text-primary); }
         .cn-admin-user span { text-transform: capitalize; }
         .cn-admin-user button { display: flex; align-items: center; gap: 8px; margin-top: 6px; color: #c5221f; font-weight: 700; font-size: 13px; }
