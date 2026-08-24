@@ -84,7 +84,7 @@ export const Sidebar = ({
             <button
               className="gn-nav-item"
               onClick={() => {
-                alert('Chronicle News - Google News UI Replica v1.0\nAll content published by single-admin editorial CMS.');
+                alert('CourantNews - Google News UI Replica v1.0\nAll content published by single-admin editorial CMS.');
               }}
             >
               <span className="gn-nav-icon"><Info size={18} /></span>
@@ -103,7 +103,7 @@ export const Sidebar = ({
 
             <div className="gn-footer-terms">
               <span>Settings</span> · <span>Privacy</span> · <span>Terms</span>
-              <div className="gn-copyright">© 2026 Chronicle News</div>
+              <div className="gn-copyright">© 2026 CourantNews</div>
             </div>
           </div>
 
