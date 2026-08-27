@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FileText, LogOut, Newspaper, Plus, ShieldCheck, Sun, Moon, Monitor } from 'lucide-react';
+import { FileText, LogOut, Newspaper, Plus, ShieldCheck, Sun, Moon, Monitor, Tags } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -23,6 +23,7 @@ export const AdminLayout = () => {
           <NavLink end to="/admin" className="cn-admin-nav-link"><Newspaper size={17} /> Dashboard</NavLink>
           <NavLink to="/admin/articles" className="cn-admin-nav-link"><FileText size={17} /> Articles</NavLink>
           <NavLink to="/admin/articles/new" className="cn-admin-nav-link"><Plus size={17} /> New article</NavLink>
+          <NavLink to="/admin/categories" className="cn-admin-nav-link"><Tags size={17} /> Categories</NavLink>
         </nav>
         <div className="cn-admin-theme" aria-label="Color theme"><button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}><Sun size={15}/></button><button className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')}><Moon size={15}/></button><button className={theme === 'system' ? 'active' : ''} onClick={() => setTheme('system')}><Monitor size={15}/></button></div>
         <div className="cn-admin-user">

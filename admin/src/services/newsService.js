@@ -65,6 +65,31 @@ export const newsService = {
     return requireData(await supabase.from('categories').select('*').order('name'));
   },
 
+  async createCategory(category) {
+    return requireData(
+      await supabase
+        .from('categories')
+        .insert({ name: category.name.trim(), slug: category.slug.trim(), icon: category.icon?.trim() || 'Home' })
+        .select()
+        .single()
+    );
+  },
+
+  async updateCategory(id, category) {
+    return requireData(
+      await supabase
+        .from('categories')
+        .update({ name: category.name.trim(), slug: category.slug.trim(), icon: category.icon?.trim() || 'Home' })
+        .eq('id', id)
+        .select()
+        .single()
+    );
+  },
+
+  async deleteCategory(id) {
+    return requireData(await supabase.from('categories').delete().eq('id', id));
+  },
+
   async getPublicArticles() {
     return requireData(
       await supabase.from('articles').select(publicArticleFields).order('published_at', { ascending: false })

@@ -4,6 +4,7 @@ import { AdminDashboard } from './AdminDashboard';
 import { ArticleEditor } from './ArticleEditor';
 import { AdminLayout } from './AdminLayout';
 import { RequireAdmin } from './RequireAdmin';
+import { CategoryManagement } from './CategoryManagement';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export const AdminRoutes = () => (
         <Route path="articles" element={<DashboardPage />} />
         <Route path="articles/new" element={<EditorPage />} />
         <Route path="articles/:articleId/edit" element={<EditorPage />} />
+        <Route path="categories" element={<CategoryManagement />} />
       </Route>
     </Route>
     <Route path="*" element={<Navigate to="/admin" replace />} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { CategoryPills } from './components/common/CategoryPills';
@@ -11,8 +11,6 @@ import { EditorsPicksWidget } from './components/feed/EditorsPicksWidget';
 import { WeatherWidget } from './components/feed/WeatherWidget';
 import { ArticleDetail } from './components/article/ArticleDetail';
 import { SearchResults } from './components/search/SearchResults';
-import { AdminLogin } from './components/admin/AdminLogin';
-import { AdminRoutes } from './components/admin/AdminRoutes';
 import { newsService } from './services/newsService';
 
 function PublicApp() {
@@ -499,12 +497,4 @@ function PublicApp() {
   );
 }
 
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin/*" element={<AdminRoutes />} />
-      <Route path="*" element={<PublicApp />} />
-    </Routes>
-  );
-}
+export default PublicApp;

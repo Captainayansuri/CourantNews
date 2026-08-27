@@ -222,30 +222,6 @@ export const Header = ({
           color: var(--text-primary);
         }
 
-        .gn-admin-badge-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 12px;
-          border-radius: 20px;
-          background-color: var(--accent-light);
-          color: var(--accent-color);
-          font-weight: 600;
-          font-size: 13px;
-        }
-
-        .gn-admin-avatar {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background-color: var(--accent-color);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-        }
-
         .gn-user-menu-wrapper {
           position: relative;
         }

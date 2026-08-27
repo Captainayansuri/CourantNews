@@ -1,9 +1,8 @@
 import React from 'react';
 import {
   Home, Globe, Flag, Briefcase, Cpu, Film, Trophy, Atom, HeartPulse, MessageSquare,
-  Settings, Info, Mail, ShieldAlert, Sparkles, LayoutDashboard
+  Settings, Info, Mail
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 const ICON_MAP = {
   Home, Globe, Flag, Briefcase, Cpu, Film, Trophy, Atom, HeartPulse, MessageSquare
@@ -18,8 +17,6 @@ export const Sidebar = ({
   currentView,
   setCurrentView
 }) => {
-  const { isStaff } = useAuth();
-
   const renderIcon = (iconName) => {
     const IconComp = ICON_MAP[iconName] || Home;
     return <IconComp size={18} />;
@@ -60,23 +57,6 @@ export const Sidebar = ({
 
           <hr className="gn-sidebar-divider" />
 
-          {/* Admin CMS Direct Shortcut */}
-          {isStaff && (
-            <>
-              <div className="gn-nav-section">
-                <div className="gn-section-label">Management</div>
-                <a
-                  href="/admin"
-                  className={`gn-nav-item ${currentView.startsWith('admin') ? 'active' : ''}`}
-                >
-                  <span className="gn-nav-icon"><LayoutDashboard size={18} /></span>
-                  <span className="gn-nav-text">CMS Dashboard</span>
-                </a>
-              </div>
-              <hr className="gn-sidebar-divider" />
-            </>
-          )}
-
           {/* Bottom Utility Links */}
           <div className="gn-nav-section gn-utility-section">
             <div className="gn-section-label">Journal & Meta</div>
@@ -84,7 +64,7 @@ export const Sidebar = ({
             <button
               className="gn-nav-item"
               onClick={() => {
-                alert('CourantNews - Google News UI Replica v1.0\nAll content published by single-admin editorial CMS.');
+                alert('CourantNews - Google News UI Replica v1.0\nAll content published by the CourantNews editorial desk.');
               }}
             >
               <span className="gn-nav-icon"><Info size={18} /></span>
