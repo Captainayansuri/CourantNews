@@ -171,9 +171,227 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   max-width: 1120px;
 }
 
+.gn-info-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 12px 0 48px;
+}
+
+.gn-info-page-header {
+  padding: 28px 0 36px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.gn-info-eyebrow {
+  color: var(--brand-blue);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.gn-info-page h1 {
+  color: var(--text-primary);
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+
+.gn-info-intro {
+  color: var(--text-secondary);
+  font-size: 18px;
+  line-height: 1.65;
+  max-width: 720px;
+}
+
+.gn-info-section-grid {
+  display: grid;
+  gap: 0;
+}
+
+.gn-info-section {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 20px;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.gn-info-section-number {
+  color: var(--accent-yellow);
+  font-size: 13px;
+  font-weight: 800;
+  padding-top: 4px;
+}
+
+.gn-info-section h2,
+.gn-contact-item h2 {
+  color: var(--text-primary);
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.gn-info-section p,
+.gn-contact-item p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 700px;
+}
+
+.gn-category-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.gn-category-card {
+  background: var(--accent-light);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 18%, var(--border-color));
+  border-radius: var(--chip-radius);
+  color: var(--accent-color);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 14px;
+}
+
+.gn-info-closing {
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 700;
+  padding-top: 34px;
+}
+
+.gn-contact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+  gap: 48px;
+  padding-top: 32px;
+}
+
+.gn-contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gn-contact-item h2 {
+  font-size: 18px;
+}
+
+.gn-contact-email {
+  align-self: flex-start;
+  color: var(--accent-color);
+  font-size: 17px;
+  font-weight: 800;
+  border-bottom: 2px solid var(--accent-yellow);
+  padding-bottom: 4px;
+}
+
+.gn-contact-form {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.gn-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.gn-form-field label {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gn-form-field input,
+.gn-form-field textarea {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  padding: 11px 12px;
+  resize: vertical;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.gn-form-field input:focus,
+.gn-form-field textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent);
+  outline: none;
+}
+
+.gn-contact-submit {
+  align-self: flex-start;
+  background: var(--accent-color);
+  border-radius: 8px;
+  color: var(--text-on-accent);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 18px;
+  transition: background-color .15s, transform .15s;
+}
+
+.gn-contact-submit:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.gn-form-status {
+  border-radius: 8px;
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+.gn-form-status.success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.gn-form-status.error {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
 @media (max-width: 768px) {
   :root { --header-height: 116px; }
   .content-body {
     padding: 16px 12px;
+  }
+
+  .gn-info-page {
+    padding-top: 0;
+  }
+
+  .gn-info-page-header {
+    padding-top: 12px;
+  }
+
+  .gn-info-intro {
+    font-size: 16px;
+  }
+
+  .gn-info-section {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px;
+    padding: 24px 0;
+  }
+
+  .gn-contact-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .gn-contact-form {
+    padding: 18px;
   }
 }

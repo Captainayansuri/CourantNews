@@ -1,7 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Home, Globe, Flag, Briefcase, Cpu, Film, Trophy, Atom, HeartPulse, MessageSquare,
-  Settings, Info, Mail
+  Info, Mail
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -61,25 +62,15 @@ export const Sidebar = ({
           <div className="gn-nav-section gn-utility-section">
             <div className="gn-section-label">Journal & Meta</div>
             
-            <button
-              className="gn-nav-item"
-              onClick={() => {
-                alert('CourantNews - Google News UI Replica v1.0\nAll content published by the CourantNews editorial desk.');
-              }}
-            >
+            <Link className="gn-nav-item" to="/about" onClick={onClose}>
               <span className="gn-nav-icon"><Info size={18} /></span>
               <span className="gn-nav-text">About</span>
-            </button>
+            </Link>
 
-            <button
-              className="gn-nav-item"
-              onClick={() => {
-                alert('Editorial Desk Contact:\neditor@chroniclenews.org');
-              }}
-            >
+            <Link className="gn-nav-item" to="/contact" onClick={onClose}>
               <span className="gn-nav-icon"><Mail size={18} /></span>
               <span className="gn-nav-text">Contact</span>
-            </button>
+            </Link>
 
             <div className="gn-footer-terms">
               <span>Settings</span> · <span>Privacy</span> · <span>Terms</span>

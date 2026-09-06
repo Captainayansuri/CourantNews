@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
+import { PublicFooter } from './components/layout/PublicFooter';
+import { AboutPage } from './components/pages/AboutPage';
+import { ContactPage } from './components/pages/ContactPage';
 import { CategoryPills } from './components/common/CategoryPills';
 import { BreakingBanner } from './components/feed/BreakingBanner';
 import { TopStoryCard } from './components/feed/TopStoryCard';
@@ -14,6 +17,7 @@ import { SearchResults } from './components/search/SearchResults';
 import { newsService } from './services/newsService';
 
 function PublicApp() {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   
   const [categories, setCategories] = useState([]);
@@ -176,9 +180,12 @@ function PublicApp() {
           setCurrentView={setCurrentViewState}
         />
         <main className="content-body" style={{ marginLeft: 'var(--sidebar-width)' }}>
-          
+          {location.pathname === '/about' && <AboutPage categories={categories} />}
+
+          {location.pathname === '/contact' && <ContactPage />}
+
           {/* View 1: Article Reader */}
-          {currentView === 'article' && (
+          {location.pathname !== '/about' && location.pathname !== '/contact' && currentView === 'article' && (
             <ArticleDetail
               articleId={selectedArticleId}
               onBack={goBack}
@@ -187,7 +194,7 @@ function PublicApp() {
           )}
 
           {/* View 2: Search Results */}
-          {currentView === 'search' && (
+          {location.pathname !== '/about' && location.pathname !== '/contact' && currentView === 'search' && (
             <SearchResults
               query={searchQuery}
               results={searchResults}
@@ -197,7 +204,7 @@ function PublicApp() {
           )}
 
           {/* Homepage / Category Feed */}
-          {currentView === 'home' && (
+          {location.pathname !== '/about' && location.pathname !== '/contact' && currentView === 'home' && (
             <div className="gn-feed-view animate-fade-in">
               
               {/* Horizontal Category Pill Bar */}
@@ -340,6 +347,8 @@ function PublicApp() {
 
         </main>
       </div>
+
+      <PublicFooter />
 
       <style>{`
         .gn-briefing-banner {
