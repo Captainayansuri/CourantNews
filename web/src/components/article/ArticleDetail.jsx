@@ -323,14 +323,14 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
         .gn-article-hero {
           margin: 0 0 28px 0;
           border-radius: 12px;
-          overflow: hidden;
         }
 
         .gn-article-hero img {
           width: 100%;
-          max-height: 440px;
-          object-fit: cover;
+          height: auto;
+          object-fit: contain;
           display: block;
+          border-radius: inherit;
         }
 
         .gn-hero-caption {
