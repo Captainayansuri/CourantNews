@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
 import {
-  ArrowLeft, Clock, Share2, Bookmark, Check, Edit, Eye, BookOpen, ExternalLink, Sparkles
+  ArrowLeft, Clock, Share2, Bookmark, Check, Edit, BookOpen, ExternalLink, Sparkles
 } from 'lucide-react';
 import { newsService } from '../../services/newsService';
 import { ArticleCard } from '../feed/ArticleCard';
@@ -85,9 +85,6 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
           {article.editors_pick_flag && <span className="gn-flag-tag editors">EDITOR'S PICK</span>}
         </div>
 
-        <h1 className="gn-article-title">{article.title}</h1>
-        {article.excerpt && <p className="gn-article-dek">{article.excerpt}</p>}
-
         <div className="gn-article-byline-bar">
           <div className="gn-author-avatar">{article.byline ? article.byline[0] : 'E'}</div>
           <div className="gn-byline-info">
@@ -97,11 +94,10 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
             </div>
           </div>
 
-          <div className="gn-view-badge">
-            <Eye size={14} />
-            <span>{article.view_count || 1} views</span>
-          </div>
         </div>
+
+        <h1 className="gn-article-title">{article.title}</h1>
+        {article.excerpt && <p className="gn-article-dek">{article.excerpt}</p>}
       </header>
 
       {/* Hero Media */}
@@ -220,13 +216,15 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
 
         .gn-article-header {
           margin-bottom: 24px;
+          padding-bottom: 24px;
+          border-bottom: 1px solid var(--border-subtle);
         }
 
         .gn-article-breadcrumb {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-bottom: 12px;
+          margin-bottom: 20px;
         }
 
         .gn-category-chip {
@@ -258,11 +256,11 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
 
         .gn-article-title {
           font-family: var(--font-sans);
-          font-size: 32px;
+          font-size: 52px;
           font-weight: 700;
-          line-height: 1.25;
+          line-height: 1.12;
           color: var(--text-primary);
-          margin-bottom: 12px;
+          margin-bottom: 16px;
         }
 
         .gn-article-dek {
@@ -277,8 +275,7 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
           display: flex;
           align-items: center;
           gap: 14px;
-          padding-top: 16px;
-          border-top: 1px solid var(--border-subtle);
+          margin-bottom: 24px;
         }
 
         .gn-author-avatar {
@@ -299,7 +296,7 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
         }
 
         .gn-author-name {
-          font-size: 14px;
+          font-size: 16px;
           font-weight: 600;
           color: var(--text-primary);
         }
@@ -307,17 +304,6 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
         .gn-pub-date {
           font-size: 12px;
           color: var(--text-muted);
-        }
-
-        .gn-view-badge {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 12px;
-          color: var(--text-muted);
-          background-color: var(--bg-hover);
-          padding: 4px 10px;
-          border-radius: 12px;
         }
 
         .gn-article-hero {
@@ -430,7 +416,7 @@ export const ArticleDetail = ({ articleId, onBack, onOpenArticle }) => {
             padding: 16px;
           }
           .gn-article-title {
-            font-size: 24px;
+            font-size: 30px;
           }
           .gn-article-dek {
             font-size: 15px;
